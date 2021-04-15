@@ -12,9 +12,9 @@
 
 ;(function () {
   'use strict'
-  const sleepInterval = 2200
-  const invLinkTxt = 'Invoice'
-  const invEndpoint = 'https://www.amazon.co.uk/gp/shared-cs/ajax/invoice/invoice.html?relatedRequestId=&isADriveSubscription=&isBookingOrder=0&orderId='
+  const INVOICE_DLINK_TXT = 'Invoice'
+  const INVOICE_API_EP =
+    'https://www.amazon.co.uk/gp/shared-cs/ajax/invoice/invoice.html?relatedRequestId=&isADriveSubscription=&isBookingOrder=0&orderId='
   const downloadButton = `
     <span id="downloadInvoicesButton" class="a-declarative" style="right: 0; position: absolute;">
       <span class="a-button a-button-dark download-invoices-button" id="a-autoid-3">
@@ -28,55 +28,41 @@
   `
 
   $('#controlsContainer > .top-controls').append(downloadButton)
-  $('#downloadInvoicesButton').click(() => downloadAll())
+  $('#downloadInvoicesButton').click(() => {
+    const orders = $('.order-info')
+    orders.each(getOrderInvoice)
+  })
 
-  function downloadAll () {
-    let orders = $('.order-info')
-
-    orders.each(function (i) {
-      const el = $(this)
-      const details = el
+  async function getOrderInvoice (i) {
+    const el = $(this)
+    const filename =
+      el
         .find('.value')
         .map(function () {
-          return $(this).text().trim()
+          return $(this)
+            .text()
+            .trim()
         })
         .get()
-        .join(' ')
-      const invLink = el.find(`a:contains('${invLinkTxt}')`)
-      // Not found
-      if (!invLink.length) return
+        .join(' ') + '.pdf'
 
-      invLink[0].click()
-      
-    })
+    const orderId = el.find('bdi').text()
+    const invReqURI = INVOICE_API_EP + orderId
+    console.log(filename, orderId, invReqURI)
 
-    // function finda (txt) {
-    //   let finds = Array.from(document.querySelectorAll('a')).filter(el =>
-    //     el.textContent.includes(txt)
-    //   )
-    //   console.log(txt + ': ' + finds.length)
-    //   return finds
-    // }
+    const invRes = await fetch(invReqURI)
+    const invHtml = $(await invRes.text())
 
-    // function downloada (txt) {
-    //   finda(txt).forEach((el, i, arr) => {
-    //     console.log(`Downloading ${txt}...`, el.href)
-    //     window.open(el.href, '_blank')
-    //   })
-    // }
+    const dlinkEls = invHtml.find(`a:contains('${INVOICE_DLINK_TXT}')`)
+    const dlinks = dlinkEls
+      .map(function () {
+        // Form full download url
+        return window.location.origin + $(this).attr('href')
+      })
+      .get()
+    console.log('dlinks', dlinks)
 
-    // finda('Invoice').forEach((e, i, arr) => {
-    //   let sleep = 0
-    //   setTimeout(() => {
-    //     e.click()
-    //     console.log(i, e)
-    //     if (i === arr.length - 1) {
-    //       setTimeout(() => downloada('Invoice 1'), 1000)
-    //       setTimeout(() => downloada('Invoice 2'), 2000)
-    //     }
-    //   }, sleep)
-    //   sleep += sleepInterval
-    // })
+    dlinks.forEach(dl => downloadAs(dl, filename))
   }
 
   function downloadAs (url, filename) {
