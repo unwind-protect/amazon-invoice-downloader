@@ -32,7 +32,7 @@
 
   $('h1').append(downloadButton);
   $('#downloadInvoicesButton').click(() => {
-    const orders = $('.order-card');
+    const orders = $('.js-order-card');
     console.log(orders);
     orders.each(getOrderInvoice);
   });
@@ -57,7 +57,12 @@
       })
       .get();
 
-    dlinks.forEach((dl, idx) => downloadAs(dl, `Amazon-order-${orderId}--${idx}.pdf`));
+    // dlinks.forEach((dl, idx) => downloadAs(dl, `Amazon-order-${orderId}--${idx}.pdf`));
+    // download in series to try to provide some sort of ordering of the files.
+    for (const [idx, dl] of dlinks.entries())
+    {
+        await downloadAs(dl, `Amazon-order-${orderId}--${idx}.pdf`);
+    }
   };
 
   async function downloadAs (url, filename) {
