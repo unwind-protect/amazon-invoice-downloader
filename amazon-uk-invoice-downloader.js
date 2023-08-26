@@ -19,7 +19,7 @@
     'https://www.amazon.co.uk/gp/shared-cs/ajax/invoice/invoice.html?relatedRequestId=&isADriveSubscription=&isBookingOrder=0&orderId=';
   const ORDER_SUMMARY_URL = 'https://www.amazon.co.uk/gp/css/summary/print.html/ref=oh_aui_ajax_invoice?ie=UTF8&orderID=';//203-6502956-3604346
   const downloadButton = `
-    <span id="downloadInvoicesButton" class="a-declarative" style="right: 0; position: absolute;">
+    <span id="downloadInvoicesButton" class="a-declarative">
       <span class="a-button a-button-dark download-invoices-button" id="a-autoid-3">
         <span class="a-button-inner">
           <span class="a-button-text" role="button">
