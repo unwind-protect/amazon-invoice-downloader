@@ -12,9 +12,12 @@
 
 ;(function () {
   'use strict'
-  const INVOICE_DLINK_TXT = 'Invoice'
+  var $ = window.jQuery;
+  console.log("afgasgasdgasdgasdfasdasfsdfasfasdfasfasf");
+  const INVOICE_DLINK_TXT = 'Invoice';
   const INVOICE_API_EP =
-    'https://www.amazon.co.uk/gp/shared-cs/ajax/invoice/invoice.html?relatedRequestId=&isADriveSubscription=&isBookingOrder=0&orderId='
+    'https://www.amazon.co.uk/gp/shared-cs/ajax/invoice/invoice.html?relatedRequestId=&isADriveSubscription=&isBookingOrder=0&orderId=';
+  const ORDER_SUMMARY_URL = 'https://www.amazon.co.uk/gp/css/summary/print.html/ref=oh_aui_ajax_invoice?ie=UTF8&orderID=';//203-6502956-3604346
   const downloadButton = `
     <span id="downloadInvoicesButton" class="a-declarative" style="right: 0; position: absolute;">
       <span class="a-button a-button-dark download-invoices-button" id="a-autoid-3">
@@ -25,54 +28,49 @@
         </span>
       </span>
     </span>
-  `
+  `;
 
-  $('#controlsContainer > .top-controls').append(downloadButton)
+  //$('#controlsContainer > .top-controls').append(downloadButton);
+    $('h1').append(downloadButton);
   $('#downloadInvoicesButton').click(() => {
-    const orders = $('.order-info')
-    orders.each(getOrderInvoice)
-  })
+    const orders = $('.order-card');
+    console.log(orders);
+    orders.each(getOrderInvoice);
+  });
 
-  async function getOrderInvoice (i) {
-    const el = $(this)
-    const filename =
-      el
-        .find('.value')
-        .map(function () {
-          return $(this)
-            .text()
-            .trim()
-        })
-        .get()
-        .join(' ') + '.pdf'
+  async function getOrderInvoice (idx, item) {
+      console.log(item);
+      var elt = $(item);
+    const idelt = elt.find('.yohtmlc-order-id');
+    const orderId = $($(idelt).children()[1]).text().trim();
+    //const filename = "Amazon-order-"+orderId+".pdf";
 
-    const orderId = el.find('bdi').text()
-    const invReqURI = INVOICE_API_EP + orderId
-    console.log(filename, orderId, invReqURI)
+    const invReqURI = INVOICE_API_EP + orderId;
+    console.log(orderId, invReqURI);
 
-    const invRes = await fetch(invReqURI)
-    const invHtml = $(await invRes.text())
+    const invRes = await fetch(invReqURI);
+    const invHtml = $(await invRes.text());
 
-    const dlinkEls = invHtml.find(`a:contains('${INVOICE_DLINK_TXT}')`)
+    const dlinkEls = invHtml.find(`a:contains('${INVOICE_DLINK_TXT}')`);
     const dlinks = dlinkEls
       .map(function () {
         // Form full download url
         return window.location.origin + $(this).attr('href')
       })
-      .get()
-    console.log('dlinks', dlinks)
+      .get();
+    console.log('dlinks', dlinks);
 
-    dlinks.forEach(dl => downloadAs(dl, filename))
-  }
+    dlinks.forEach((dl, idx) => downloadAs(dl, "Amazon-order-"+orderId+"--"+idx+".pdf"));
+  };
 
   function downloadAs (url, filename) {
     fetch(url).then(function (t) {
       return t.blob().then(b => {
-        const a = document.createElement('a')
-        a.href = URL.createObjectURL(b)
-        a.setAttribute('download', filename)
-        a.click()
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(b);
+        a.setAttribute('download', filename);
+        a.click();
       })
     })
-  }
+   }
 })()
