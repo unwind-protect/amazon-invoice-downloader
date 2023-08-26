@@ -7,13 +7,13 @@
 // @description  Download all invoices
 // @author       HR
 // @include      /.*\.amazon\.co\.uk\/gp\/.*\/order\-history.*/
+// @include      /.*\.amazon\.co\.uk\/your\-orders\/.*/
 // @grant        none
 // ==/UserScript==
 
 ;(function () {
   'use strict'
   var $ = window.jQuery;
-  console.log("afgasgasdgasdgasdfasdasfsdfasfasdfasfasf");
   const INVOICE_DLINK_TXT = 'Invoice';
   const INVOICE_API_EP =
     'https://www.amazon.co.uk/gp/shared-cs/ajax/invoice/invoice.html?relatedRequestId=&isADriveSubscription=&isBookingOrder=0&orderId=';
@@ -30,8 +30,7 @@
     </span>
   `;
 
-  //$('#controlsContainer > .top-controls').append(downloadButton);
-    $('h1').append(downloadButton);
+  $('h1').append(downloadButton);
   $('#downloadInvoicesButton').click(() => {
     const orders = $('.order-card');
     console.log(orders);
@@ -39,11 +38,10 @@
   });
 
   async function getOrderInvoice (idx, item) {
-      console.log(item);
-      var elt = $(item);
+    console.log(item);
+    var elt = $(item);
     const idelt = elt.find('.yohtmlc-order-id');
     const orderId = $($(idelt).children()[1]).text().trim();
-    //const filename = "Amazon-order-"+orderId+".pdf";
 
     const invReqURI = INVOICE_API_EP + orderId;
     console.log(orderId, invReqURI);
@@ -58,19 +56,16 @@
         return window.location.origin + $(this).attr('href')
       })
       .get();
-    console.log('dlinks', dlinks);
 
-    dlinks.forEach((dl, idx) => downloadAs(dl, "Amazon-order-"+orderId+"--"+idx+".pdf"));
+    dlinks.forEach((dl, idx) => downloadAs(dl, `Amazon-order-${orderId}--${idx}.pdf`));
   };
 
-  function downloadAs (url, filename) {
-    fetch(url).then(function (t) {
-      return t.blob().then(b => {
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(b);
-        a.setAttribute('download', filename);
-        a.click();
-      })
-    })
-   }
-})()
+  async function downloadAs (url, filename) {
+    const f = await fetch(url);
+    const b = await f.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(b);
+    a.setAttribute('download', filename);
+    a.click();
+  };
+})();
